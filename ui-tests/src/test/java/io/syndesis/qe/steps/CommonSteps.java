@@ -198,8 +198,11 @@ public class CommonSteps {
             if (currentAccount.isPresent()) {
 
                 String service = currentAccount.get().getService();
-                Credentials current = Credentials.valueOf(service.toUpperCase());
-
+                Credentials current = null;
+                try {
+                    current = Credentials.valueOf(service.toUpperCase());
+                } catch (IllegalArgumentException ex) {
+                }
                 switch (current) {
                     case DROPBOX:
                         service = "DropBox";

@@ -1,15 +1,10 @@
 package io.syndesis.qe.bdd;
 
-import io.syndesis.qe.Component;
-import io.syndesis.qe.templates.FtpTemplate;
-
-import io.syndesis.qe.templates.MysqlTemplate;
-import io.syndesis.qe.utils.TestUtils;
-
 import org.assertj.core.api.Assertions;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,13 +16,18 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.openshift.api.model.Build;
+import io.fabric8.openshift.api.model.ImageStream;
+import io.syndesis.qe.Component;
+import io.syndesis.qe.TestConfiguration;
 import io.syndesis.qe.endpoints.TestSupport;
 import io.syndesis.qe.templates.AmqTemplate;
+import io.syndesis.qe.templates.FtpTemplate;
+import io.syndesis.qe.templates.MysqlTemplate;
 import io.syndesis.qe.templates.SyndesisTemplate;
 import io.syndesis.qe.utils.DbUtils;
 import io.syndesis.qe.utils.LogCheckerUtils;
 import io.syndesis.qe.utils.OpenShiftUtils;
-import io.syndesis.qe.utils.SampleDbConnectionManager;
+import io.syndesis.qe.utils.TestUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -50,8 +50,49 @@ public class CommonSteps {
         SyndesisTemplate.deploy();
     }
 
+    public void refreshImageStreams() {
+        List<ImageStream> isList = OpenShiftUtils.client().imageStreams().inNamespace(TestConfiguration.openShiftNamespace()).list().getItems();
+        while (isList.size() < 6) {
+            try {
+                Thread.sleep(5000L);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            isList = OpenShiftUtils.client().imageStreams().inNamespace(TestConfiguration.openShiftNamespace()).list().getItems();
+            log.info(isList.size() + "");
+        }
+
+        try {
+            Thread.sleep(60*1000*1L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        isList = OpenShiftUtils.client().imageStreams().inNamespace(TestConfiguration.openShiftNamespace()).list().getItems();
+        for (ImageStream imageStream : isList) {
+            log.info("Refreshing " + imageStream.getMetadata().getName());
+            try {
+                Runtime.getRuntime().exec("oc -n syndesis import-image " + imageStream.getMetadata().getName() + ":1.3").waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //            ProcessBuilder pb = new ProcessBuilder("oc", "-n", TestConfiguration.openShiftNamespace(), "import-image", imageStream.getMetadata().getName() + ":1.3");
+//            try {
+//                Process p = pb.inheritIO().start();
+//                p.waitFor();
+//            } catch (Exception e) {
+//                log.error("Error while running upgrade script: ", e);
+//                e.printStackTrace();
+//            }
+        }
+
+    }
+
     @Then("^wait for Syndesis to become ready")
     public void waitForSyndeisis() {
+        refreshImageStreams();
         EnumSet<Component> components = EnumSet.allOf(Component.class);
 
         ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -73,6 +114,12 @@ public class CommonSteps {
             }
         } catch (InterruptedException e) {
             Assertions.fail("Syndesis wasn't initilized in time");
+        }
+
+        try {
+            Thread.sleep(60*1000*15L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

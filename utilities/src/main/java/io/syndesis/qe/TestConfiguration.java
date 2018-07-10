@@ -25,6 +25,7 @@ public class TestConfiguration {
     public static final String SYNDESIS_UI_BROWSER = "syndesis.config.ui.browser";
     public static final String SYNDESIS_URL_SUFFIX = "syndesis.config.url.suffix";
     public static final String SYNDESIS_CALLBACK_URL_SUFFIX = "syndesis.config.callbackUrlSuffix";
+    public static final String SYNDESIS_IMAGE_STREAMS = "syndesis.config.image.streams";
 
     public static final String SYNDESIS_REST_API_PATH = "syndesis.config.rest.api.path";
     public static final String SYNDESIS_SERVER_ROUTE = "syndesis.config.server.route";
@@ -91,6 +92,10 @@ public class TestConfiguration {
     public static String syndesisTempalateSA() { return get().readValue(SYNDESIS_TEMPLATE_SA); }
 
     public static String syndesisBrowser() { return get().readValue(SYNDESIS_UI_BROWSER); }
+
+    public static String syndesisImageStreams() {
+        return get().readValue(SYNDESIS_IMAGE_STREAMS);
+    }
 
     public static boolean namespaceCleanup() { return Boolean.parseBoolean(get().readValue(OPENSHIFT_NAMESPACE_CLEANUP)); }
 

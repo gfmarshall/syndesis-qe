@@ -62,7 +62,7 @@ public class ConnectionsGeneralSteps {
     @Given("^create SF connection")
     public void createSalesforceConnection() {
 
-        final Account salesforceAccount = accountsDirectory.getAccount("salesforce").get();
+        final Account salesforceAccount = accountsDirectory.getAccount("QE Salesforce").get();
         final Connector salesforceConnector = connectorsEndpoint.get("salesforce");
 
         final Connection salesforceConnection = new Connection.Builder()

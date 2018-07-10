@@ -1,7 +1,22 @@
 package io.syndesis.qe.steps.integrations;
 
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import static org.hamcrest.Matchers.is;
+
+import static com.codeborne.selenide.Condition.visible;
+
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Condition;
+
 import com.codeborne.selenide.SelenideElement;
+
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import cucumber.api.DataTable;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Then;
@@ -14,18 +29,6 @@ import io.syndesis.qe.utils.ExportedIntegrationJSONUtil;
 import io.syndesis.qe.utils.TestUtils;
 import io.syndesis.qe.wait.OpenShiftWaitUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
-import org.assertj.core.api.Condition;
-
-import java.io.File;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static com.codeborne.selenide.Condition.visible;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by sveres on 11/15/17.
@@ -62,9 +65,14 @@ public class IntegrationSteps {
 
     @Then("^she waits until integration \"([^\"]*)\" gets into \"([^\"]*)\" state$")
     public void waitForIntegrationState(String integrationName, String integrationStatus) {
+        try {
+            Thread.sleep(5000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         SelenideElement integration = integrations.getIntegration(integrationName);
         assertTrue(TestUtils.waitForEvent(status -> status.equals(integrationStatus), () -> integrations.getIntegrationItemStatus(integration),
-                TimeUnit.MINUTES, 5, TimeUnit.SECONDS, 1));
+                TimeUnit.MINUTES, 10, TimeUnit.SECONDS, 1));
     }
 
     //Kebab menu test, #553 -> part #548, #549.
