@@ -117,7 +117,7 @@ public class CommonSteps {
         }
 
         try {
-            Thread.sleep(60*1000*15L);
+            Thread.sleep(60*1000*2L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
